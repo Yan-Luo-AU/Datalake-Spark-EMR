@@ -66,6 +66,7 @@ This project implements a star schema. songplays is the fact table in the data m
 ├── dl.cfg       # Configuration file containing AWS IAM credentials <br>
 ├── etl.py       # ETL processes using Spark <br>
 ├── etl-test.py   # Test codes in local environment <br>
+├── data folder  # Contain song data and log data files for testing in local environment <br>
 └── README.md <br>
 
 ### Project Steps
