@@ -69,7 +69,7 @@ This project implements a star schema. songplays is the fact table in the data m
 ├── data folder  # Contain song data and log data files for testing in local environment <br>
 └── README.md <br>
 
-### Project Steps
+## Project Steps
 1. Create an IAM User for EMR with access to S3 bucket
 The first step is to create a new IAM user with programmatic access. Once created, note down the access key ID and secret access key and update `dl.cfg` accordingly.
 > [AWS] <br>
