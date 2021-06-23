@@ -14,7 +14,7 @@ As their data engineer, you are tasked with building an ETL pipeline that extrac
 
 You'll be working with two datasets that reside in S3. Here are the S3 links for each:
 
-> • Song data: s3://udacity-dend/song_data
+> • Song data: s3://udacity-dend/song_data <br>
 > • Log data: s3://udacity-dend/log_data 
 
 ### Song Dataset
@@ -42,7 +42,7 @@ The log files in the dataset you'll be working with are partitioned by year and 
 
 And below is an example of what the data in a log file, 2018-11-12-events.json, looks like.
 
-![image-20210621201618941](image-20210621201618941.png)
+![image-20210621201618941](img/image-20210621201618941.png)
 
 
 ## Data Lake Schema
@@ -62,50 +62,50 @@ This project implements a star schema. songplays is the fact table in the data m
         * start_time, hour, day, week, month, year, weekday
 
 ## Project Structure
-.
-├── dl.cfg       # Configuration file containing AWS IAM credentials
-├── etl.py       # ETL processes using Spark
-├── etl-test.py   # Test codes in local environment
-└── README.md
+
+├── dl.cfg       # Configuration file containing AWS IAM credentials <br>
+├── etl.py       # ETL processes using Spark <br>
+├── etl-test.py   # Test codes in local environment <br>
+└── README.md <br>
 
 ### Project Steps
 1. Create an IAM User for EMR with access to S3 bucket
 The first step is to create a new IAM user with programmatic access. Once created, note down the access key ID and secret access key and update `dl.cfg` accordingly.
-> [AWS]
-> AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXX
+> [AWS] <br>
+> AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXX <br>
 > AWS_SECRET_ACCESS_KEY=XXXXXXXXXXXXXXXXXXXX
 
 2. Create an AWS S3 bucket for output data
-Specify an AWS S3 bucket and folder to store the data with an ETL process. Once created, updated in etl.py
-`output_data = "s3a://XXXXX-output/"`
+Specify an AWS S3 bucket and folder to store the data with an ETL process. Once created, updated in etl.py <br>
+`output_data = "s3a://XXXXX-output/"`<br>
 
 3. Create an EC2 Key Pair
 To connect to EMR from your local computer, you will need to have an EC2 key pair. Once ctreated, download the pem file for later use.
 
 4. Create an EMR cluster
-EMR CLI is as follows:
-`aws emr create-cluster --auto-scaling-role EMR_AutoScaling_DefaultRole --applications Name=Hadoop Name=Hive Name=Spark --ebs-root-volume-size 10 --ec2-attributes '{"KeyName":"spark-cluster-ssh","InstanceProfile":"EMR_EC2_DefaultRole","SubnetId":"subnet-db68ca91","EmrManagedSlaveSecurityGroup":"sg-0c0c97745940a0xxx","EmrManagedMasterSecurityGroup":"sg-0c66b3a2afb2xxx"}' --service-role EMR_DefaultRole --enable-debugging --release-label emr-5.33.0 --log-uri 's3n://aws-logs-xxxx9-us-west-2/elasticmapreduce/' --name 'My-spark-cluster' --instance-groups '[{"InstanceCount":1,"EbsConfiguration":{"EbsBlockDeviceConfigs":[{"VolumeSpecification":{"SizeInGB":32,"VolumeType":"gp2"},"VolumesPerInstance":2}]},"InstanceGroupType":"MASTER","InstanceType":"m5.xlarge","Name":"Master - 1"},{"InstanceCount":2,"EbsConfiguration":{"EbsBlockDeviceConfigs":[{"VolumeSpecification":{"SizeInGB":32,"VolumeType":"gp2"},"VolumesPerInstance":2}]},"InstanceGroupType":"CORE","InstanceType":"m5.xlarge","Name":"Core - 2"}]' --configurations '[{"Classification":"spark","Properties":{"maximizeResourceAllocation":"true"}}]' --scale-down-behavior TERMINATE_AT_TASK_COMPLETION --region us-west-2`
-Once created, under Security groups for Master, add Inbound rules: 
+EMR CLI is as follows:<br>
+`aws emr create-cluster --auto-scaling-role EMR_AutoScaling_DefaultRole --applications Name=Hadoop Name=Hive Name=Spark --ebs-root-volume-size 10 --ec2-attributes '{"KeyName":"spark-cluster-ssh","InstanceProfile":"EMR_EC2_DefaultRole","SubnetId":"subnet-db68ca91","EmrManagedSlaveSecurityGroup":"sg-0c0c97745940a0xxx","EmrManagedMasterSecurityGroup":"sg-0c66b3a2afb2xxx"}' --service-role EMR_DefaultRole --enable-debugging --release-label emr-5.33.0 --log-uri 's3n://aws-logs-xxxx9-us-west-2/elasticmapreduce/' --name 'My-spark-cluster' --instance-groups '[{"InstanceCount":1,"EbsConfiguration":{"EbsBlockDeviceConfigs":[{"VolumeSpecification":{"SizeInGB":32,"VolumeType":"gp2"},"VolumesPerInstance":2}]},"InstanceGroupType":"MASTER","InstanceType":"m5.xlarge","Name":"Master - 1"},{"InstanceCount":2,"EbsConfiguration":{"EbsBlockDeviceConfigs":[{"VolumeSpecification":{"SizeInGB":32,"VolumeType":"gp2"},"VolumesPerInstance":2}]},"InstanceGroupType":"CORE","InstanceType":"m5.xlarge","Name":"Core - 2"}]' --configurations '[{"Classification":"spark","Properties":{"maximizeResourceAllocation":"true"}}]' --scale-down-behavior TERMINATE_AT_TASK_COMPLETION --region us-west-2`<br>
+Once created, under Security groups for Master, add Inbound rules: <br>
 > Type: SSH, Protocol: TCP, Port range: 22
-
+<br>
 * This step is important, becuase without this step you can't SSH to EMR.
 
-5. Load etl.py and dl.cfg to a S3 bucket
+5. Load etl.py and dl.cfg to a S3 bucket<br>
 This step is for loading the scripts to EMR cluster in the later step.
 
-6. Connect to EMR cluster and run the program.
-Open an terminal/ ubunto instance, run the following CLI:
-    a. aws configure to setting up aws authentication
-        CLI: `aws configure`
-        In the following input spaces, enter your Access key ID, Secret access key, region, and output format
-    b. Run this cli to check the available EMR instances
-        `aws emr list-instances`
-    c. If the created EMR instance is in waiting mode, you can run the following to establish a ssh connection
-        `ssh hadoop@ec2-54-71-73-xxx.us-west-2.compute.amazonaws.com -i spark-cluster-ssh.pem`
-    d. Copy the two files from s3 bucket to the EMR cluster, under the hadoop folder:
-        `aws s3 cp s3://mydatalake-bucketname/dl.cfg /home/hadoop/dl.cfg`
-        `aws s3 cp s3://mydatalake-bucketname/etl.py /home/hadoop/etl.py`
-    e. list the item to make sure the copy command was successful.
-    d. In the home directory on the EMR master node (/home/hadoop), run the following command to execute the etl.py:
+6. Connect to EMR cluster and run the program.<br>
+Open an terminal/ ubunto instance, run the following CLI:<br>
+    a. aws configure to setting up aws authentication <br>
+        CLI: `aws configure`<br>
+        In the following input spaces, enter your Access key ID, Secret access key, region, and output format<br>
+    b. Run this cli to check the available EMR instances<br>
+        `aws emr list-instances`<br>
+    c. If the created EMR instance is in waiting mode, you can run the following to establish a ssh connection<br>
+        `ssh hadoop@ec2-54-71-73-xxx.us-west-2.compute.amazonaws.com -i spark-cluster-ssh.pem`<br>
+    d. Copy the two files from s3 bucket to the EMR cluster, under the hadoop folder:<br>
+        `aws s3 cp s3://mydatalake-bucketname/dl.cfg /home/hadoop/dl.cfg`<br>
+        `aws s3 cp s3://mydatalake-bucketname/etl.py /home/hadoop/etl.py`<br>
+    e. list the item to make sure the copy command was successful.<br>
+    d. In the home directory on the EMR master node (/home/hadoop), run the following command to execute the etl.py:<br>
         `spark-submit etl.py`
     
